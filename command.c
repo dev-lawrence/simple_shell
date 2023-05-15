@@ -8,10 +8,6 @@
 
 #define MAX_ARGS 10
 
-void displayPrompt() {
-    write(STDOUT_FILENO, "#cisfun$ ", 9);
-}
-
 void executeCommand(char *command) {
     pid_t pid = fork();
 
