@@ -3,5 +3,6 @@
 
 void displayPrompt();
 void executeCommand(char *command);
+void exitShell();
 
 #endif  /* SHELL_H */
