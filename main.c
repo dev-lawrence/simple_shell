@@ -4,8 +4,6 @@
 #include <stdlib.h>
 #include "shell.h"
 
-#define MAX_COMMAND_LENGTH 100
-
 int main() {
     char *command = NULL;
     size_t commandLength = 0;
