@@ -4,5 +4,6 @@
 void displayPrompt();
 void executeCommand(char *command);
 void exitShell();
+void printEnvironment();
 
 #endif  /* SHELL_H */

@@ -29,6 +29,10 @@ int main() {
             exitShell();
             break;
         }
+        else if (strcmp(command, "env") == 0) {
+            printEnvironment();
+            continue;
+        }
 
         executeCommand(command);
     }
