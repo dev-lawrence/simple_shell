@@ -14,7 +14,7 @@ int main() {
     while (1) {
         displayPrompt();
 
-        bytesRead = getline(&command, &commandLength, stdin);
+        bytesRead = myGetline(&command, &commandLength, stdin);
 
         if (bytesRead == -1) {
             /* End of file (Ctrl+D) reached */
