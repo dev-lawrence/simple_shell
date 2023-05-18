@@ -48,6 +48,16 @@ void executeCommand(char *command) {
         }
         args[numArgs] = NULL;  /* Set the last element to NULL to terminate the arguments list */
 
+	/* Check if it's the exit command */
+        if (strcmp(args[0], "exit") == 0) {
+            /*  Get the status argument */
+            int status = 0;
+            if (numArgs > 1) {
+                status = atoi(args[1]); /* Convert the status argument to an integer */
+            }
+            exit(status); /* Exit the shell with the provided status */
+        }
+
         execvp(args[0], args);
 
         /* execvp only returns if an error occurs */

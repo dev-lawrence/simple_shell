@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "shell.h"
 
-void exitShell() {
-    exit(0);
+void exitShell(int status) {
+    exit(status);
 }

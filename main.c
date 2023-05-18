@@ -26,9 +26,16 @@ int main() {
         command[strcspn(command, "\n")] = '\0';
 
         if (strcmp(command, "exit") == 0) {
-            exitShell();
-            break;
-        }
+	    /* Extract the exit status from the command */
+	    char *statusStr = strtok(NULL, " ");
+	    int status = 0;
+	    if (statusStr != NULL) {
+	        status = atoi(statusStr);
+	    }
+	    exitShell(status);
+	    break;
+	}
+
         else if (strcmp(command, "env") == 0) {
             printEnvironment();
             continue;
