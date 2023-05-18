@@ -14,7 +14,7 @@ int main() {
     while (1) {
         displayPrompt();
 
-        bytesRead = myGetline(&command, &commandLength, stdin);
+        bytesRead = getline(&command, &commandLength, stdin);
 
         if (bytesRead == -1) {
             /* End of file (Ctrl+D) reached */
@@ -26,16 +26,9 @@ int main() {
         command[strcspn(command, "\n")] = '\0';
 
         if (strcmp(command, "exit") == 0) {
-	    /* Extract the exit status from the command */
-	    char *statusStr = strtok(NULL, " ");
-	    int status = 0;
-	    if (statusStr != NULL) {
-	        status = atoi(statusStr);
-	    }
-	    exitShell(status);
-	    break;
-	}
-
+            exitShell();
+            break;
+        }
         else if (strcmp(command, "env") == 0) {
             printEnvironment();
             continue;

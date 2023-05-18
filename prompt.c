@@ -3,10 +3,6 @@
 #include <stdio.h>
 #include "shell.h"
 
-/**
- * displayPrompt - Displays the shell prompt
- */
-void displayPrompt(void)
-{
-	write(STDOUT_FILENO, "#cisfun$ ", 9);
+void displayPrompt() {
+    write(STDOUT_FILENO, "#cisfun$ ", 9);
 }
