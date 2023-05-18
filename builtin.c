@@ -2,12 +2,17 @@
 #include <stdio.h>
 #include "shell.h"
 
-extern char **environ;
+/**
+ * printEnvironment - Prints the environment variables.
+ * @environ: The array of environment variables.
+ */
+void printEnvironment(char **environ)
+{
+	char **env = environ;
 
-void printEnvironment() {
-    char **env = environ;
-    while (*env) {
-        printf("%s\n", *env);
-        env++;
-    }
+	while (*env)
+	{
+		printf("%s\n", *env);
+		env++;
+	}
 }
