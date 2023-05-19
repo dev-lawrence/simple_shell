@@ -6,38 +6,48 @@
 
 #define MAX_COMMAND_LENGTH 100
 
-int main() {
-    char *command = NULL;
-    size_t commandLength = 0;
-    ssize_t bytesRead;
+/**
+ * main - Entry point of the shell program
+ *
+ * This function implements a basic shell that repeatedly prompts the user for
+ * commands, reads the input, and executes the corresponding commands.
+ *
+ * Return: Always returns 0.
+ */
+int main(void)
+{
+	char *command = NULL;
+	size_t commandLength = 0;
+	ssize_t bytesRead;
 
-    while (1) {
-        displayPrompt();
+	while (1)
+	{
+		display_prompt();
+		bytesRead = getline(&command, &commandLength, stdin);
 
-        bytesRead = getline(&command, &commandLength, stdin);
+	if (bytesRead == -1)
+	{
+		/* End of file (Ctrl+D) reached */
+		write(STDOUT_FILENO, "\n", 1);
+		break;
+	}
+	/* Remove the trailing newline character */
 
-        if (bytesRead == -1) {
-            /* End of file (Ctrl+D) reached */
-            write(STDOUT_FILENO, "\n", 1);
-            break;
-        }
+	command[strcspn(command, "\n")] = '\0';
 
-        /* Remove the trailing newline character */
-        command[strcspn(command, "\n")] = '\0';
+	if (strcmp(command, "exit") == 0)
+	{
+		exitShell();
+		break;
+	}
+	else if (strcmp(command, "env") == 0)
+	{
+		printEnvironment();
+		continue;
+	}
+	executeCommand(command);
+	}
 
-        if (strcmp(command, "exit") == 0) {
-            exitShell();
-            break;
-        }
-        else if (strcmp(command, "env") == 0) {
-            printEnvironment();
-            continue;
-        }
-
-        executeCommand(command);
-    }
-
-    free(command);
-
-    return 0;
+	free(command);
+	return (0);
 }
