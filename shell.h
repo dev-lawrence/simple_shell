@@ -15,4 +15,6 @@ int hasBufferSpace(void);
 char *findNewline(void);
 void copyInputToCommand(char *command, size_t bytes_to_copy);
 
+int splitCommand(char *command, char *args[]);
+
 #endif  /* SHELL_H */

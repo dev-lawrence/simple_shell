@@ -7,6 +7,30 @@
 #include "shell.h"
 
 #define MAX_ARGS 10
+/**
+ * splitCommand - Tokenizes the command string into arguments
+ * @command: The command to tokenize
+ * @args: An array to store the arguments
+ *
+ * Return: The number of arguments
+ */
+int splitCommand(char *command, char *args[])
+{
+	int numArgs = 0;
+	char *token;
+	const char *delimiters = " \t\n";
+	char *saveptr;
+
+	token = strtok_r(command, delimiters, &saveptr);
+	while (token != NULL && numArgs < MAX_ARGS)
+	{
+	args[numArgs++] = token;
+	token = strtok_r(NULL, delimiters, &saveptr);
+	}
+	args[numArgs] = NULL;
+
+	return (numArgs);
+}
 
 /**
  * executeCommand - Executes the given command in a child process
@@ -25,17 +49,9 @@ void executeCommand(char *command)
 	{
 		/* Child process */
 		char *args[MAX_ARGS + 2];
-		int numArgs = 0;
 
 		/* Tokenize the command string into arguments */
-		char *token = strtok(command, " ");
-
-		while (token != NULL && numArgs < MAX_ARGS)
-		{
-			args[numArgs++] = token;
-			token = strtok(NULL, " ");
-		}
-		args[numArgs] = NULL;
+		splitCommand(command, args);
 
 		 execvp(args[0], args);
 
