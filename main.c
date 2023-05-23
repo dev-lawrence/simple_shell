@@ -16,14 +16,13 @@
  */
 int main(void)
 {
-	char *command = NULL;
-	size_t commandLength = 0;
+	char command[MAX_COMMAND_LENGTH];
 	ssize_t bytesRead;
 
 	while (1)
 	{
 		display_prompt();
-		bytesRead = getline(&command, &commandLength, stdin);
+		bytesRead = my_getline(command);
 
 	if (bytesRead == -1)
 	{
@@ -48,6 +47,5 @@ int main(void)
 	executeCommand(command);
 	}
 
-	free(command);
 	return (0);
 }

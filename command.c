@@ -37,7 +37,8 @@ void executeCommand(char *command)
 		}
 		args[numArgs] = NULL;
 
-		execvp(args[0], args);
+		 execvp(args[0], args);
+
 
 		/* execvp only returns if an error occurs */
 		write(STDERR_FILENO, "No such file or directory\n", 26);
