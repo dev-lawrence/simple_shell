@@ -7,6 +7,25 @@
 #define MAX_COMMAND_LENGTH 100
 
 /**
+ * processCommand - Process a command in the shell.
+ *
+ * @command: The command to process.
+ */
+void processCommand(const char *command);
+
+/**
+ * handleExitCommand - Handle the "exit" command in the shell.
+ *
+ * @command: The exit command with optional arguments.
+ */
+void handleExitCommand(const char *command);
+
+/**
+ * handleEnvCommand - Handle the "env" command in the shell.
+ */
+void handleEnvCommand(void);
+
+/**
  * main - Entry point of the shell program
  *
  * This function implements a basic shell that repeatedly prompts the user for
@@ -34,18 +53,63 @@ int main(void)
 
 	command[strcspn(command, "\n")] = '\0';
 
-	if (strcmp(command, "exit") == 0)
+	if (strncmp(command, "exit", 4) == 0)
 	{
-		exitShell();
+		handleExitCommand(command);
 		break;
 	}
+
 	else if (strcmp(command, "env") == 0)
 	{
-		printEnvironment();
-		continue;
+		handleEnvCommand();
 	}
-	executeCommand(command);
+		else
+		{
+		executeCommand(command);
+		}
 	}
 
 	return (0);
+}
+
+/**
+ * processCommand - Process a command in the shell.
+ *
+ * @command: The command to process.
+ */
+void processCommand(const char *command)
+{
+	char *mutableCommand = strdup(command);
+
+	executeCommand(mutableCommand);
+	free(mutableCommand);
+}
+
+/**
+ * handleExitCommand - Handle the "exit" command in the shell.
+ *
+ * @command: The exit command with optional arguments.
+ */
+void handleExitCommand(const char *command)
+{
+    /* Check if command has additional arguments */
+	if (strlen(command) > 4)
+	{
+
+	int status = atoi(command + 5);
+
+	exitShell(status);
+	}
+	else
+	{
+	exitShell(0);
+	}
+}
+
+/**
+ * handleEnvCommand - Handle the "env" command in the shell.
+ */
+void handleEnvCommand(void)
+{
+	printEnvironment();
 }

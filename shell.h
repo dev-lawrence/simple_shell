@@ -6,7 +6,7 @@ extern char **environ;
 
 void display_prompt(void);
 void executeCommand(char *command);
-void exitShell(void);
+void exitShell(int status);
 void printEnvironment(void);
 ssize_t my_getline(char *command);
 
