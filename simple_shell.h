@@ -143,10 +143,10 @@ char *_strdup(const char *);
 void _puts(char *);
 int _putchar(char);
 
-/* custom_exits.c */
-char *_strncpy(char *, char *, int);
-char *_strncat(char *, char *, int);
-char *_strchr(char *, char);
+/* custom_exit.c */
+char *copyString(char *, char *, int);
+char *concatenateString(char *, char *, int);
+char *findCharacter(char *, char);
 
 /* custom_tokenizer.c */
 char **strtow(char *, char *);
