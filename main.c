@@ -1,48 +1,115 @@
-#include "simple_shell.h"
+#include <string.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include "shell.h"
+
+#define MAX_COMMAND_LENGTH 100
 
 /**
- * main - Entry point of the program
- * @ac: Argument count
- * @av: Argument vector
+ * processCommand - Process a command in the shell.
  *
- * Return: 0 on success, 1 on error
+ * @command: The command to process.
  */
-int main(int ac, char **av)
+void processCommand(const char *command);
+
+/**
+ * handleExitCommand - Handle the "exit" command in the shell.
+ *
+ * @command: The exit command with optional arguments.
+ */
+void handleExitCommand(const char *command);
+
+/**
+ * handleEnvCommand - Handle the "env" command in the shell.
+ */
+void handleEnvCommand(void);
+
+/**
+ * main - Entry point of the shell program
+ *
+ * This function implements a basic shell that repeatedly prompts the user for
+ * commands, reads the input, and executes the corresponding commands.
+ *
+ * Return: Always returns 0.
+ */
+int main(void)
 {
-	info_t info[] = {INFO_INIT}; /* Initializing info array */
-	int fd = 2; /* File descriptor initialized to standard error */
+	char command[MAX_COMMAND_LENGTH];
+	ssize_t bytesRead;
 
-	/* Move the value of fd to the register and add 3 to it */
-	asm ("mov %1, %0\n\t"
-		"add $3, %0"
-		: "=r" (fd)
-		: "r" (fd));
-
-	if (ac == 2)
+	while (1)
 	{
-		/* Open the file provided as an argument in read-only mode */
-		fd = open(av[1], O_RDONLY);
-		if (fd == -1)
-		{
-			/* Handle error cases */
-			if (errno == EACCES)
-				exit(126);
-			if (errno == ENOENT)
-			{
-				_eputs(av[0]);
-				_eputs(": 0: Can't open ");
-				_eputs(av[1]);
-				_eputchar('\n');
-				_eputchar(BUF_FLUSH);
-				exit(127);
-			}
-			return (EXIT_FAILURE);
-		}
-		info->readfd = fd; /* Set the file descriptor in info structure */
+		display_prompt();
+		bytesRead = my_getline(command);
+
+	if (bytesRead == -1)
+	{
+		/* End of file (Ctrl+D) reached */
+		write(STDOUT_FILENO, "\n", 1);
+		break;
+	}
+	/* Remove the trailing newline character */
+
+	command[strcspn(command, "\n")] = '\0';
+
+	if (strncmp(command, "exit", 4) == 0)
+	{
+		handleExitCommand(command);
+		break;
 	}
 
-	populate_env_list(info); /* Populate environment list */
-	read_history(info); /* Read command history */
-	hsh(info, av); /* Call the shell function */
-	return (EXIT_SUCCESS);
+	else if (strcmp(command, "env") == 0)
+	{
+		handleEnvCommand();
+	}
+		else
+		{
+		executeCommand(command);
+		}
+	}
+
+	return (0);
+}
+
+/**
+ * processCommand - Process a command in the shell.
+ *
+ * @command: The command to process.
+ */
+void processCommand(const char *command)
+{
+	char *mutableCommand = strdup(command);
+
+	executeCommand(mutableCommand);
+	free(mutableCommand);
+}
+
+/**
+ * handleExitCommand - Handle the "exit" command in the shell.
+ *
+ * @command: The exit command with optional arguments.
+ */
+void handleExitCommand(const char *command)
+{
+    /* Check if command has additional arguments */
+	if (strlen(command) > 4)
+	{
+
+	int status = atoi(command + 5);
+
+	exitShell(status);
+	}
+	else
+	{
+	exitShell(0);
+	}
+}
+
+/**
+ * handleEnvCommand - Handle the "env" command in the shell.
+ */
+void handleEnvCommand(void)
+{
+	printEnvironment();
 }
