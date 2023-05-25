@@ -59,6 +59,12 @@ int main(void)
 		break;
 	}
 
+	else if (strncmp(command, "setenv", 6) == 0 ||
+		strncmp(command, "unsetenv", 8) == 0)
+	{
+		processCommand(command);
+	}
+
 	else if (strcmp(command, "env") == 0)
 	{
 		handleEnvCommand();

@@ -3,7 +3,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <string.h>
-
+#include <stdio.h>
 #include "shell.h"
 
 #define MAX_ARGS 10
@@ -33,10 +33,96 @@ int splitCommand(char *command, char *args[])
 }
 
 /**
+ * handleSetEnv - Handles the "setenv" command.
+ * @args: The command arguments.
+ * @numArgs: The number of arguments.
+ */
+void handleSetEnv(char **args, int numArgs);
+
+/**
+ * handleUnsetEnv - Handles the "unsetenv" command.
+ * @args: The command arguments.
+ * @numArgs: The number of arguments.
+ */
+void handleUnsetEnv(char **args, int numArgs);
+
+/**
+ * executeChildProcess - Executes the command in a child process.
+ * @args: The command arguments.
+ */
+void executeChildProcess(char **args);
+
+/**
  * executeCommand - Executes the given command in a child process
  * @command: The command to execute
  */
 void executeCommand(char *command)
+{
+	char *args[MAX_ARGS + 2];
+	int numArgs = splitCommand(command, args);
+
+	if (numArgs > 0)
+	{
+		if (strcmp(args[0], "setenv") == 0)
+		{
+			handleSetEnv(args, numArgs);
+		}
+		else if (strcmp(args[0], "unsetenv") == 0)
+		{
+			handleUnsetEnv(args, numArgs);
+		}
+		else
+		{
+			executeChildProcess(args);
+		}
+	}
+}
+
+/**
+ * handleSetEnv - Handles the "setenv" command.
+ * @args: The command arguments.
+ * @numArgs: The number of arguments.
+ */
+void handleSetEnv(char **args, int numArgs)
+{
+	if (numArgs != 3)
+	{
+		fprintf(stderr, "Usage: setenv VARIABLE VALUE\n");
+	}
+	else
+	{
+		if (setenv(args[1], args[2], 1) != 0)
+		{
+			fprintf(stderr, "Failed to set environment variable\n");
+		}
+	}
+}
+
+/**
+ * handleUnsetEnv - Handles the "unsetenv" command.
+ * @args: The command arguments.
+ * @numArgs: The number of arguments.
+ */
+void handleUnsetEnv(char **args, int numArgs)
+{
+	if (numArgs != 2)
+	{
+		fprintf(stderr, "Usage: unsetenv VARIABLE\n");
+	}
+	else
+	{
+		if (unsetenv(args[1]) != 0)
+		{
+			fprintf(stderr, "Failed to unset environment variable\n");
+		}
+	}
+}
+
+/**
+ * executeChildProcess - Executes the command in a child process.
+ * @args: The command arguments.
+ */
+void executeChildProcess(char **args)
 {
 	pid_t pid = fork();
 
@@ -48,16 +134,9 @@ void executeCommand(char *command)
 	else if (pid == 0)
 	{
 		/* Child process */
-		char *args[MAX_ARGS + 2];
-
-		/* Tokenize the command string into arguments */
-		splitCommand(command, args);
-
-		 execvp(args[0], args);
-
-
+		execvp(args[0], args);
 		/* execvp only returns if an error occurs */
-		write(STDERR_FILENO, "No such file or directory\n", 26);
+		fprintf(stderr, "No such file or directory\n");
 		exit(EXIT_FAILURE);
 	}
 	else
