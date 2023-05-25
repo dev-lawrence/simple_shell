@@ -1,154 +1,48 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/wait.h>
-#include <sys/stat.h>
+#include "simple_shell.h"
 
 /**
- * handle_command - Handle the given command
- * @command: The command to handle
+ * main - Entry point of the program
+ * @ac: Argument count
+ * @av: Argument vector
  *
- * Description: This function forks a child process and executes the given
- *              command using `execve()`. If the command is not found or there
- *              is an error during forking or execution, appropriate error
- *              messages are displayed.
+ * Return: 0 on success, 1 on error
  */
-void handle_command(char *command);
-
-/**
- * execute_command - Execute the given command
- * @path: The path of the command to execute
- *
- * Description: This function sets up the arguments array and uses `execve()`
- *              to execute the command. If there is an error during execution,
- *              an appropriate error message is displayed.
- */
-void execute_command(char *path);
-
-/**
- * print_command_not_found - Print "Command not found" message
- * @command: The command that was not found
- *
- * Description: This function prints an error message indicating that the
- *              given command was not found.
- */
-void print_command_not_found(const char *command);
-
-/**
- * main - Entry point of the shell program
- *
- * Description: This function serves as the entry point for the shell program.
- *              It reads the user input from stdin, forks a child process,
- *              and executes the command using execve(). If the command is
- *              not found or there is an error during forking or execution,
- *              appropriate error messages are displayed.
- *
- * Return: Always returns 0.
- */
-int main(void)
+int main(int ac, char **av)
 {
-	char *command = NULL;
-	size_t bufsize = 0;
+	info_t info[] = {INFO_INIT}; /* Initializing info array */
+	int fd = 2; /* File descriptor initialized to standard error */
 
-	while (1)
+	/* Move the value of fd to the register and add 3 to it */
+	asm ("mov %1, %0\n\t"
+		"add $3, %0"
+		: "=r" (fd)
+		: "r" (fd));
+
+	if (ac == 2)
 	{
-		if (isatty(STDIN_FILENO))
-			printf("$ ");
-
-		if (getline(&command, &bufsize, stdin) == -1)
+		/* Open the file provided as an argument in read-only mode */
+		fd = open(av[1], O_RDONLY);
+		if (fd == -1)
 		{
-			/* Handle end of file (Ctrl+D) */
-			printf("\n");
-			break;
+			/* Handle error cases */
+			if (errno == EACCES)
+				exit(126);
+			if (errno == ENOENT)
+			{
+				_eputs(av[0]);
+				_eputs(": 0: Can't open ");
+				_eputs(av[1]);
+				_eputchar('\n');
+				_eputchar(BUF_FLUSH);
+				exit(127);
+			}
+			return (EXIT_FAILURE);
 		}
-
-		/* Remove the trailing newline character */
-		command[strcspn(command, "\n")] = '\0';
-
-		handle_command(command);
+		info->readfd = fd; /* Set the file descriptor in info structure */
 	}
 
-	free(command);
-	return (0);
-}
-
-/**
- * handle_command - Handle the given command
- * @command: The command to handle
- *
- * Description: This function forks a child process and executes the given
- *              command using `execve()`. If the command is not found or there
- *              is an error during forking or execution, appropriate error
- *              messages are displayed.
- */
-void handle_command(char *command)
-{
-	pid_t pid;
-
-	pid = fork();
-	if (pid == -1)
-	{
-		perror("fork");
-		exit(EXIT_FAILURE);
-	}
-	else if (pid == 0)
-	{
-		/* Child process */
-		char *path = strtok(command, " ");
-
-		if (access(path, X_OK) == 0)
-		{
-			execute_command(path);
-		}
-		else
-		{
-			print_command_not_found(path);
-			exit(EXIT_FAILURE);
-		}
-	}
-	else
-	{
-		/* Parent process */
-		waitpid(pid, NULL, 0);
-	}
-}
-
-/**
- * execute_command - Execute the given command
- * @path: The path of the command to execute
- *
- * Description: This function sets up the arguments array and uses `execve()`
- *              to execute the command. If there is an error during execution,
- *              an appropriate error message is displayed.
- */
-void execute_command(char *path)
-{
-	char **args = malloc(sizeof(char *) * 2);
-
-	if (args == NULL)
-	{
-		perror("malloc");
-		exit(EXIT_FAILURE);
-	}
-
-	args[0] = path;
-	args[1] = NULL;
-
-
-	execve(path, args, NULL);
-	perror("execve");
-	exit(EXIT_FAILURE);
-}
-
-/**
- * print_command_not_found - Print "Command not found" message
- * @command: The command that was not found
- *
- * Description: This function prints an error message indicating that the
- *              given command was not found.
- */
-void print_command_not_found(const char *command)
-{
-	fprintf(stderr, "Command not found: %s\n", command);
+	populate_env_list(info); /* Populate environment list */
+	read_history(info); /* Read command history */
+	hsh(info, av); /* Call the shell function */
+	return (EXIT_SUCCESS);
 }
