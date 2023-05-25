@@ -1,115 +1,147 @@
-#include <string.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
-#include "shell.h"
+#include <unistd.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
 
-#define MAX_COMMAND_LENGTH 100
+#define BUFFER_SIZE 1024
 
 /**
- * processCommand - Process a command in the shell.
+ * handle_command - Handle the given command
+ * @command: The command to handle
  *
- * @command: The command to process.
+ * Description: This function forks a child process and executes the given
+ *              command using `execve()`. If the command is not found or there
+ *              is an error during forking or execution, appropriate error
+ *              messages are displayed.
  */
-void processCommand(const char *command);
+void handle_command(char *command);
 
 /**
- * handleExitCommand - Handle the "exit" command in the shell.
+ * execute_command - Execute the given command
+ * @path: The path of the command to execute
  *
- * @command: The exit command with optional arguments.
+ * Description: This function sets up the arguments array and uses `execve()`
+ *              to execute the command. If there is an error during execution,
+ *              an appropriate error message is displayed.
  */
-void handleExitCommand(const char *command);
+void execute_command(char *path);
 
 /**
- * handleEnvCommand - Handle the "env" command in the shell.
+ * print_command_not_found - Print "Command not found" message
+ * @command: The command that was not found
+ *
+ * Description: This function prints an error message indicating that the
+ *              given command was not found.
  */
-void handleEnvCommand(void);
+void print_command_not_found(char *command);
 
 /**
  * main - Entry point of the shell program
  *
- * This function implements a basic shell that repeatedly prompts the user for
- * commands, reads the input, and executes the corresponding commands.
+ * Description: This function serves as the entry point for the shell program.
+ *              It reads the user input from stdin, forks a child process,
+ *              and executes the command using execve(). If the command is
+ *              not found or there is an error during forking or execution,
+ *              appropriate error messages are displayed.
  *
  * Return: Always returns 0.
  */
 int main(void)
 {
-	char command[MAX_COMMAND_LENGTH];
-	ssize_t bytesRead;
+	char *command = NULL;
+	size_t bufsize = 0;
 
 	while (1)
 	{
-		display_prompt();
-		bytesRead = my_getline(command);
 
-	if (bytesRead == -1)
+	if (isatty(STDIN_FILENO))
+	printf("$cisfun ");
+
+	if (getline(&command, &bufsize, stdin) == -1)
 	{
-		/* End of file (Ctrl+D) reached */
-		write(STDOUT_FILENO, "\n", 1);
-		break;
-	}
-	/* Remove the trailing newline character */
-
-	command[strcspn(command, "\n")] = '\0';
-
-	if (strncmp(command, "exit", 4) == 0)
-	{
-		handleExitCommand(command);
+		/* Handle end of file (Ctrl+D) */
+		printf("\n");
 		break;
 	}
 
-	else if (strcmp(command, "env") == 0)
-	{
-		handleEnvCommand();
-	}
-		else
-		{
-		executeCommand(command);
-		}
+		/* Remove the trailing newline character */
+		command[strcspn(command, "\n")] = '\0';
+
+		handle_command(command);
 	}
 
+	free(command);
 	return (0);
 }
 
 /**
- * processCommand - Process a command in the shell.
+ * handle_command - Handle the given command
+ * @command: The command to handle
  *
- * @command: The command to process.
+ * Description: This function forks a child process and executes the given
+ *              command using `execve()`. If the command is not found or there
+ *              is an error during forking or execution, appropriate error
+ *              messages are displayed.
  */
-void processCommand(const char *command)
+void handle_command(char *command)
 {
-	char *mutableCommand = strdup(command);
+	pid_t pid;
 
-	executeCommand(mutableCommand);
-	free(mutableCommand);
-}
-
-/**
- * handleExitCommand - Handle the "exit" command in the shell.
- *
- * @command: The exit command with optional arguments.
- */
-void handleExitCommand(const char *command)
-{
-    /* Check if command has additional arguments */
-	if (strlen(command) > 4)
+	pid = fork();
+	if (pid == -1)
 	{
-
-	int status = atoi(command + 5);
-
-	exitShell(status);
+		perror("fork");
+		exit(EXIT_FAILURE);
+	}
+	else if (pid == 0)
+	{
+		/* Child process */
+		char *path = strtok(command, " ");
+	if (access(path, X_OK) == 0)
+	{
+		execute_command(path);
 	}
 	else
 	{
-	exitShell(0);
+		print_command_not_found(path);
+		exit(EXIT_FAILURE);
+	}
+	}
+	else
+	{
+		/* Parent process */
+		waitpid(pid, NULL, 0);
 	}
 }
 
 /**
- * handleEnvCommand - Handle the "env" command in the shell.
+ * execute_command - Execute the given command
+ * @path: The path of the command to execute
+ *
+ * Description: This function sets up the arguments array and uses `execve()`
+ *              to execute the command. If there is an error during execution,
+ *              an appropriate error message is displayed.
  */
-void handleEnvCommand(void)
+void execute_command(char *path)
 {
-	printEnvironment();
+	char *args[2];
+
+	args[0] = path;
+	args[1] = NULL;
+	execve(path, args, NULL);
+	perror("execve");
+}
+
+/**
+ * print_command_not_found - Print "Command not found" message
+ * @command: The command that was not found
+ *
+ * Description: This function prints an error message indicating that the
+ *              given command was not found.
+ */
+void print_command_not_found(char *command)
+{
+	printf("No such file or directory: %s\n", command);
 }
