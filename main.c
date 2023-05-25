@@ -5,8 +5,6 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 
-#define BUFFER_SIZE 1024
-
 /**
  * handle_command - Handle the given command
  * @command: The command to handle
@@ -35,7 +33,7 @@ void execute_command(char *path);
  * Description: This function prints an error message indicating that the
  *              given command was not found.
  */
-void print_command_not_found(char *command);
+void print_command_not_found(const char *command);
 
 /**
  * main - Entry point of the shell program
@@ -55,16 +53,15 @@ int main(void)
 
 	while (1)
 	{
+		if (isatty(STDIN_FILENO))
+			printf("$ ");
 
-	if (isatty(STDIN_FILENO))
-	printf("$cisfun ");
-
-	if (getline(&command, &bufsize, stdin) == -1)
-	{
-		/* Handle end of file (Ctrl+D) */
-		printf("\n");
-		break;
-	}
+		if (getline(&command, &bufsize, stdin) == -1)
+		{
+			/* Handle end of file (Ctrl+D) */
+			printf("\n");
+			break;
+		}
 
 		/* Remove the trailing newline character */
 		command[strcspn(command, "\n")] = '\0';
@@ -99,15 +96,16 @@ void handle_command(char *command)
 	{
 		/* Child process */
 		char *path = strtok(command, " ");
-	if (access(path, X_OK) == 0)
-	{
-		execute_command(path);
-	}
-	else
-	{
-		print_command_not_found(path);
-		exit(EXIT_FAILURE);
-	}
+
+		if (access(path, X_OK) == 0)
+		{
+			execute_command(path);
+		}
+		else
+		{
+			print_command_not_found(path);
+			exit(EXIT_FAILURE);
+		}
 	}
 	else
 	{
@@ -126,12 +124,21 @@ void handle_command(char *command)
  */
 void execute_command(char *path)
 {
-	char *args[2];
+	char **args = malloc(sizeof(char *) * 2);
+
+	if (args == NULL)
+	{
+		perror("malloc");
+		exit(EXIT_FAILURE);
+	}
 
 	args[0] = path;
 	args[1] = NULL;
+
+
 	execve(path, args, NULL);
 	perror("execve");
+	exit(EXIT_FAILURE);
 }
 
 /**
@@ -141,7 +148,7 @@ void execute_command(char *path)
  * Description: This function prints an error message indicating that the
  *              given command was not found.
  */
-void print_command_not_found(char *command)
+void print_command_not_found(const char *command)
 {
-	printf("No such file or directory: %s\n", command);
+	fprintf(stderr, "Command not found: %s\n", command);
 }
