@@ -6,6 +6,65 @@
 
 #define MAX_COMMAND_LENGTH 100
 
+char *getHomeDirectory();
+
+/**
+ * changeDirectory - Changes the current working directory.
+ * @directory: The directory to change to.
+ */
+void changeDirectory(const char *directory)
+{
+	char *home = getHomeDirectory();
+	const char *targetDir = NULL;
+
+	if (directory == NULL)
+	{
+		targetDir = home;
+	}
+	else if (strcmp(directory, "-") == 0)
+	{
+		const char *previousDir = getenv("OLDPWD");
+
+	if (previousDir == NULL)
+	{
+		fprintf(stderr, "cd: OLDPWD not set\n");
+		return;
+	}
+		targetDir = previousDir;
+		printf("%s\n", targetDir);
+	}
+	else
+	{
+		targetDir = directory;
+	}
+
+	if (chdir(targetDir) != 0)
+	{
+		fprintf(stderr, "cd: No such file or directory: %s\n", targetDir);
+		return;
+	}
+
+	setenv("OLDPWD", getenv("PWD"), 1);
+	setenv("PWD", targetDir, 1);
+}
+
+/**
+ * getHomeDirectory - Retrieves the home directory path.
+ *
+ * Return: The home directory path as a string.
+ */
+char *getHomeDirectory()
+{
+	char *home = getenv("HOME");
+
+	if (home == NULL)
+	{
+		fprintf(stderr, "cd: HOME not set\n");
+		exit(EXIT_FAILURE);
+	}
+	return (home);
+}
+
 /**
  * processCommand - Process a command in the shell.
  *
@@ -69,6 +128,15 @@ int main(void)
 	{
 		handleEnvCommand();
 	}
+
+	else if (strncmp(command, "cd", 2) == 0)
+	{
+		char *directory = strtok(command, " ");
+
+		directory = strtok(NULL, " ");
+		changeDirectory(directory);
+	}
+
 		else
 		{
 		executeCommand(command);
