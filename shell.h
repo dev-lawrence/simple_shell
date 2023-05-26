@@ -1,5 +1,7 @@
 #ifndef SHELL_H
 #define SHELL_H
+#include <string.h>
+#include <stdio.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -71,6 +73,7 @@ char *findNewline(void);
 void copyInputToCommand(char *command, size_t bytes_to_copy);
 
 int splitCommand(char *command, char *args[]);
+<<<<<<< HEAD
 
 void findCommand(Info *);
 void forkCommand(Info *);
@@ -171,4 +174,6 @@ int replaceVariables(Info *);
 int isCommandChain(Info *, char *, size_t *);
 
 #endif /* SHELL_H */
+=======
+>>>>>>> ffb9cc75ce3ba9ca97f18312e1f01fbe280eabd0
 

@@ -4,7 +4,11 @@
 #include "shell.h"
 
 /**
- * display_prompt - Displays the prompt "#cisfun$ "
+ * displayPrompt - Displays the prompt "#cisfun$ "
+ * Description: This function is responsible for displaying the prompt
+ *              "#cisfun$ " to the user.
+ *              It uses the write() function to write the prompt to the
+ *              standard output file descriptor.
  */
 void display_prompt(void)
 {
